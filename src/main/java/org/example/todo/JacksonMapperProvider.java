@@ -4,19 +4,16 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
-import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.bson.types.ObjectId;
 
 /**
- * Stole from https://github.com/yamsellem/jongo-jersey
+ * Modified from "https://github.com/yamsellem/jongo-jersey".
+ * This is to fix ObjectId JSON serialization issue.
  */
 @Provider
 public class JacksonMapperProvider implements ContextResolver<ObjectMapper> {
@@ -32,14 +29,6 @@ public class JacksonMapperProvider implements ContextResolver<ObjectMapper> {
 
     private static ObjectMapper createMapper() {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(MapperFeature.AUTO_DETECT_GETTERS);
-        mapper.disable(MapperFeature.AUTO_DETECT_SETTERS);
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
-        VisibilityChecker<?> checker = mapper.getSerializationConfig().
-                getDefaultVisibilityChecker();
-        mapper.setVisibilityChecker(
-                checker.withFieldVisibility(JsonAutoDetect.Visibility.ANY));
         mapper.registerModule(new SimpleModule("jersey").
                 addSerializer(_id, _idSerializer()).
                 addDeserializer(_id, _idDeserializer()));
@@ -54,7 +43,7 @@ public class JacksonMapperProvider implements ContextResolver<ObjectMapper> {
             @Override
             public ObjectId deserialize(JsonParser jsonParser,
                     DeserializationContext deserializationContext)
-                    throws IOException, JsonProcessingException {
+                    throws IOException {
                 return new ObjectId(jsonParser.readValueAs(String.class));
             }
         };
@@ -65,7 +54,7 @@ public class JacksonMapperProvider implements ContextResolver<ObjectMapper> {
             @Override
             public void serialize(Object obj, JsonGenerator jsonGenerator,
                     SerializerProvider serializerProvider)
-                    throws IOException, JsonProcessingException {
+                    throws IOException {
                 jsonGenerator.writeString(obj == null ? null : obj.toString());
             }
         };
