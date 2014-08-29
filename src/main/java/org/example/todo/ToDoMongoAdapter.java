@@ -2,6 +2,7 @@ package org.example.todo;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import org.bson.types.ObjectId;
 import org.jongo.Jongo;
@@ -10,28 +11,40 @@ import org.jongo.MongoCursor;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ToDoMongoAdapter {
-    private static final String DB_NAME = "tododb";
     private static final String COLL_NAME = "todos";
 
-    private final ServerAddress serverAddress;
+    private final MongoDbUrlParser dbUrlParser;
     private MongoClient mongoClient;
     private Jongo jongo;
 
     public ToDoMongoAdapter() { this(null); }
 
-    public ToDoMongoAdapter(ServerAddress serverAddress) {
-        this.serverAddress = serverAddress;
+    public ToDoMongoAdapter(String dbUrl) {
+        dbUrlParser = new MongoDbUrlParser(dbUrl);
     }
 
-    public void connect() {
-        close();
+    public synchronized void connect() {
+        if (jongo != null) return;
         try {
-            mongoClient = serverAddress != null ?
-                    new MongoClient(serverAddress) : new MongoClient();
-            DB db = mongoClient.getDB(DB_NAME);
+            ServerAddress serverAddress =
+                    new ServerAddress(dbUrlParser.host, dbUrlParser.port);
+            String user = dbUrlParser.user;
+            String password = dbUrlParser.password;
+            String dbName = dbUrlParser.db;
+            if (user != null && password != null) {
+                MongoCredential credential =
+                        MongoCredential.createMongoCRCredential(
+                                user, dbName, password.toCharArray());
+                mongoClient = new MongoClient(serverAddress,
+                        Arrays.asList(credential));
+            } else {
+                mongoClient = new MongoClient(serverAddress);
+            }
+            DB db = mongoClient.getDB(dbName);
             jongo = new Jongo(db);
         } catch (UnknownHostException uhe) {
             throw new RuntimeException(uhe);
@@ -74,6 +87,10 @@ public class ToDoMongoAdapter {
 
     public void deleteMatched(String query, Object... params) {
         collection().remove(query, params);
+    }
+
+    public void deleteAll() {
+        collection().remove();
     }
 
     public Object saveOne(ToDoItem item) {

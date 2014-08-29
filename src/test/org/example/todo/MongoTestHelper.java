@@ -8,15 +8,17 @@ import java.net.InetSocketAddress;
 
 public class MongoTestHelper {
     private MongoServer mongoServer;
-    private ServerAddress serverAddress;
+    private String mongoDbUrl;
     private ToDoMongoAdapter adapter;
 
     public void setUp() {
         mongoServer = new MongoServer(new MemoryBackend());
-        InetSocketAddress socketAddress = mongoServer.bind();
-        serverAddress = new ServerAddress(socketAddress);
-        adapter = new ToDoMongoAdapter(serverAddress);
+        InetSocketAddress socket = mongoServer.bind();
+        mongoDbUrl = "mongodb://" + socket.getHostName() + ":" +
+                socket.getPort() + "/" + MongoDbUrlParser.DEFAULT_DB;
+        adapter = new ToDoMongoAdapter(mongoDbUrl);
 
+        adapter.deleteAll();
         addToDo("fix faucet", "Fix leaky faucet in kitchen.", false);
         addToDo("tax return",
                 "File overdue 2014 tax return before IRS comes at me.", false);
@@ -34,7 +36,7 @@ public class MongoTestHelper {
 
     public MongoServer getMongoServer() { return mongoServer; }
 
-    public ServerAddress getServerAddress() { return serverAddress; }
+    public String getMongoDbUrl() { return mongoDbUrl; }
 
     public ToDoMongoAdapter getAdapter() { return adapter; }
 
