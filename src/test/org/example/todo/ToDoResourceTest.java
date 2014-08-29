@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response.Status;
 
+// TODO: add negative tests
 public class ToDoResourceTest extends JerseyTest {
     private MongoTestHelper mongoTestHelper;
 

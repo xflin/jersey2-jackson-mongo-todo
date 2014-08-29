@@ -1,6 +1,7 @@
 package org.example.todo;
 
 import javax.inject.Singleton;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -38,7 +39,7 @@ public class ToDoResource {
     @Consumes(APPLICATION_JSON)
     public ToDoItem saveOne(ToDoItem todo) {
         if (todo == null || todo.getTitle() == null) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Invalid to-do item: title is required.");
         }
         mongo.saveOne(todo);
@@ -64,7 +65,7 @@ public class ToDoResource {
     public ToDoItem updateOrPatchOne(@PathParam("id") String id,
             ToDoItem item) {
         if (item == null || item.getTitle() == null) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Invalid to-do item: title is required.");
         }
         if (item.get_id() == null) item.set_id(id);
