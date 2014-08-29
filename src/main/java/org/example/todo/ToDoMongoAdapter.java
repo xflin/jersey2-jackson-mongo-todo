@@ -58,6 +58,10 @@ public class ToDoMongoAdapter {
         return collection().findOne(new ObjectId(id)).as(ToDoItem.class);
     }
 
+    public ToDoItem findOneByQuery(String query, Object... params) {
+        return collection().findOne(query, params).as(ToDoItem.class);
+    }
+
     public List<ToDoItem> findByTitle(String title) {
         MongoCursor<ToDoItem> cursor =
                 collection().find("{title:#}", title).as(ToDoItem.class);
@@ -72,8 +76,8 @@ public class ToDoMongoAdapter {
         collection().remove(query, params);
     }
 
-    public void saveOne(ToDoItem item) {
-        collection().save(item).getUpsertedId();
+    public Object saveOne(ToDoItem item) {
+        return collection().save(item).getUpsertedId();
     }
 
     public void updateOne(String id, String modifier, Object... params) {

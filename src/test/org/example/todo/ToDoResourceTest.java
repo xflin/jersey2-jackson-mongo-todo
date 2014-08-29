@@ -92,4 +92,48 @@ public class ToDoResourceTest extends JerseyTest {
         assertEquals(item1.getBody(), item3.getBody());
         assertEquals(item1.isDone(), item3.isDone());
     }
+
+    @Test
+    public void testPatchOne() {
+        ToDoItem item1 = mongoTestHelper.getAdapter().findOne();
+        String id = item1.get_id();
+        WebTarget target = target();
+
+        ToDoItem item2 = new ToDoItem("patched title", null, null);
+        ToDoItem item3 = target.path("todo/" + id + "/patch").
+                request(APPLICATION_JSON).
+                put(Entity.entity(item2, APPLICATION_JSON), ToDoItem.class);
+        assertEquals(id, item3.get_id());
+        assertEquals("patched title", item3.getTitle());
+        assertEquals(item1.getBody(), item3.getBody());
+        assertEquals(item1.isDone(), item3.isDone());
+    }
+
+    @Test
+    public void testSaveOne() {
+        String title = "finish homework";
+        String body = "Finish this week's assignment before Wednesday.";
+        ToDoItem item1 = new ToDoItem(title, body, true);
+        WebTarget target = target();
+        ToDoItem item2 = target.path("todo").request(APPLICATION_JSON).
+                post(Entity.entity(item1, APPLICATION_JSON), ToDoItem.class);
+        assertEquals(title, item2.getTitle());
+        assertEquals(body, item2.getBody());
+        assertTrue(item2.isDone());
+    }
+
+    @Test
+    public void testMarkDone() {
+        ToDoItem item1 =
+                mongoTestHelper.getAdapter().findOneByQuery("{done:#}", false);
+        String id = item1.get_id();
+
+        WebTarget target = target();
+        ToDoItem change = new ToDoItem(null, null, true);
+        ToDoItem item2 = target.path("todo/" + id + "/patch").
+                request(APPLICATION_JSON).
+                put(Entity.entity(change, APPLICATION_JSON), ToDoItem.class);
+        assertEquals(id, item2.get_id());
+        assertTrue(item2.isDone());
+    }
 }
