@@ -6,35 +6,41 @@ simple TO-DO note REST API.
 
 + GET /todo
 
-  List To-Do items.
+    List To-Do items.
 
 + POST /todo
 
-  {"title": "...", "body": "...", done: false}
+    {"title": "...", "body": "...", done: false}
 
-  Create a TO-DO item.
+    Create a TO-DO item.
 
 + PUT /todo/[id]
 
-  {...}
+    {...}
 
-  (Full) Update of a TO-DO item.
-
-+ PUT /todo/[id]/patch
-
-  {...}
-
-  Patch (partial update) of a TO-DO item.
+    (Full) Update of a TO-DO item.
 
 + PUT /todo/[id]/patch
 
-  { "done": true }
+    {...}
 
-  Mark done (when value is true) or undone (when value is false).
+    Patch (partial update) of a TO-DO item.
+
++ PUT /todo/[id]/patch
+
+    { "done": true }
+
+    Mark done (when value is true) or undone (when value is false).
+  
++ PUT /todo/[id]/patch
+
+    { "done": true, ", smsPhoneNo: "6501234567" }
+     
+    Mark done and send SMS message.
 
 + DELETE /todo/[id]
 
-  Delete a TO-DO item.
+    Delete a TO-DO item.
 
 To Run in Local System
 ----------------------
@@ -44,7 +50,7 @@ To Run in Local System
 + Install foreman (part of Heroku toolbelt).
 + Git clone and run it:
 
-    https://github.com/xflin/jersey2-jackson-mongo-todo.git
+    git clone https://github.com/xflin/jersey2-jackson-mongo-todo.git
 
     cd jersey2-jackson-mongo-todo
 
