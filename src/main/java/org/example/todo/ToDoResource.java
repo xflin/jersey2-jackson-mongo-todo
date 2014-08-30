@@ -62,7 +62,14 @@ public class ToDoResource {
     @GET
     @Path("{id: [a-f0-9]+}")
     public ToDoItem getToDoItemById(@PathParam("id") String id) {
-        return mongo.findById(id);
+        ToDoItem todo = null;
+        try {
+            todo = mongo.findById(id);
+        } catch (IllegalArgumentException iae) {
+            throw new BadRequestException(iae.getMessage());
+        }
+        if (todo == null) throw new NotFoundException();
+        return todo;
     }
 
     @DELETE
