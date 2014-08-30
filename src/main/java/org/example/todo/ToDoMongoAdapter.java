@@ -18,29 +18,43 @@ public class ToDoMongoAdapter {
     private static final String COLL_NAME = "todos";
 
     private final MongoDbUrlParser dbUrlParser;
+    private ServerAddress serverAddress;
+    private String user, password, dbName;
     private MongoClient mongoClient;
     private Jongo jongo;
 
-    public ToDoMongoAdapter() { this(null); }
+    // for local mongodb
+    public ToDoMongoAdapter() { this((String)null); }
 
+    // for remote (and local) mongodb such as MongoHQ
     public ToDoMongoAdapter(String dbUrl) {
         dbUrlParser = new MongoDbUrlParser(dbUrl);
+        serverAddress = null;
+    }
+
+    // mostly for testing purpose
+    public ToDoMongoAdapter(ServerAddress serverAddress) {
+        this.serverAddress = serverAddress;
+        dbUrlParser = null;
     }
 
     public synchronized void connect() {
         if (jongo != null) return;
         try {
-            ServerAddress serverAddress =
-                    new ServerAddress(dbUrlParser.host, dbUrlParser.port);
-            String user = dbUrlParser.user;
-            String password = dbUrlParser.password;
-            String dbName = dbUrlParser.db;
+            if (dbUrlParser != null) {
+                serverAddress =
+                        new ServerAddress(dbUrlParser.host, dbUrlParser.port);
+                user = dbUrlParser.user;
+                password = dbUrlParser.password;
+                dbName = dbUrlParser.db;
+            }
+            if (dbName == null) dbName = MongoDbUrlParser.DEFAULT_DB;
             if (user != null && password != null) {
-                MongoCredential credential =
-                        MongoCredential.createMongoCRCredential(
-                                user, dbName, password.toCharArray());
-                mongoClient = new MongoClient(serverAddress,
-                        Arrays.asList(credential));
+                    MongoCredential credential =
+                            MongoCredential.createMongoCRCredential(
+                                    user, dbName, password.toCharArray());
+                    mongoClient = new MongoClient(serverAddress,
+                            Arrays.asList(credential));
             } else {
                 mongoClient = new MongoClient(serverAddress);
             }

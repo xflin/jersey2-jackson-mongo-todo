@@ -3,21 +3,22 @@ package org.example.todo;
 import com.mongodb.ServerAddress;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
+import org.eclipse.jetty.server.Server;
 
 import java.net.InetSocketAddress;
 
 public class MongoTestHelper {
     private MongoServer mongoServer;
-    private String mongoDbUrl;
+    private ServerAddress serverAddress;
     private ToDoMongoAdapter adapter;
 
     public void setUp() {
         mongoServer = new MongoServer(new MemoryBackend());
         InetSocketAddress socket = mongoServer.bind();
-        mongoDbUrl = "mongodb://" + socket.getHostName() + ":" +
-                socket.getPort() + "/" + MongoDbUrlParser.DEFAULT_DB;
-        adapter = new ToDoMongoAdapter(mongoDbUrl);
+        serverAddress = new ServerAddress(socket);
+        adapter = new ToDoMongoAdapter(serverAddress);
 
+        // seed data
         adapter.deleteAll();
         addToDo("fix faucet", "Fix leaky faucet in kitchen.", false);
         addToDo("tax return",
@@ -36,7 +37,7 @@ public class MongoTestHelper {
 
     public MongoServer getMongoServer() { return mongoServer; }
 
-    public String getMongoDbUrl() { return mongoDbUrl; }
+    public ServerAddress getServerAddress() { return serverAddress; }
 
     public ToDoMongoAdapter getAdapter() { return adapter; }
 

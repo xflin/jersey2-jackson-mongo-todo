@@ -1,5 +1,7 @@
 package org.example.todo;
 
+import com.mongodb.ServerAddress;
+
 import javax.inject.Singleton;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
@@ -19,14 +21,19 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(APPLICATION_JSON)
 @Singleton
 public class ToDoResource {
-    public static String mongoDbUrl;
+    // for unit test purpose only
+    public static ServerAddress mongoServerAddress;
 
     private ToDoMongoAdapter mongo;
 
     public ToDoResource() {
-        String url = mongoDbUrl;
-        if (url == null) url = System.getenv("MONGODB_URL"); //Heroku + MongoHq
-        mongo = new ToDoMongoAdapter(url);
+        if (mongoServerAddress != null) {
+            mongo = new ToDoMongoAdapter(mongoServerAddress);
+        } else {
+            // local mongodb or Heroku + MongoHQ
+            String url = System.getenv("MONGODB_URL");
+            mongo = new ToDoMongoAdapter(url);
+        }
     }
 
     @GET
@@ -87,7 +94,7 @@ public class ToDoResource {
 
         Boolean done = change.isDone();
         if (done != null && !done.equals(item.isDone())) {
-            item.setDone(change.isDone());
+            item.setDone(done);
             // TODO: send mark done/undone message
         }
 

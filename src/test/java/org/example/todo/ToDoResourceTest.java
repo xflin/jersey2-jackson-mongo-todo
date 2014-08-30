@@ -29,7 +29,7 @@ public class ToDoResourceTest extends JerseyTest {
         enable(TestProperties.DUMP_ENTITY);
         mongoTestHelper = new MongoTestHelper();
         mongoTestHelper.setUp();
-        ToDoResource.mongoDbUrl = mongoTestHelper.getMongoDbUrl();
+        ToDoResource.mongoServerAddress = mongoTestHelper.getServerAddress();
         ToDoAppConfig app = new ToDoAppConfig();
         return app;
     }

@@ -6,6 +6,7 @@ public class ToDoItem {
     @ObjectId private String _id;
     private String title, body;
     private Boolean done;
+    private String smsPhoneNo;
 
     public ToDoItem() {}
 
@@ -26,6 +27,9 @@ public class ToDoItem {
 
     public Boolean isDone() { return done; }
     public void setDone(Boolean done) { this.done = done; }
+
+    public String getSmsPhoneNo() { return smsPhoneNo; }
+    public void setSmsPhoneNo(String phoneNo) { smsPhoneNo = phoneNo; }
 
     @Override
     public String toString() {

@@ -15,7 +15,7 @@ public class TwilioUtil {
     private final TwilioRestClient twilioClient;
 
     public TwilioUtil() {
-        accountSid = System.getenv("TWILIO_ACCONT_SID");
+        accountSid = System.getenv("TWILIO_ACCOUNT_SID");
         authToken = System.getenv("TWILIO_AUTH_TOKEN");
         fromPhoneNo = System.getenv("TWILIO_FROM_PHONE_NO");
 
@@ -24,12 +24,14 @@ public class TwilioUtil {
     }
 
     public void sendSms(String msg) throws TwilioRestException {
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("From", "+14087286057"));
+        if (fromPhoneNo != null) {
+            List<NameValuePair> params = new ArrayList<>();
+            params.add(new BasicNameValuePair("From", fromPhoneNo));
 
-        MessageFactory messageFactory =
-                twilioClient.getAccount().getMessageFactory();
-        Message message = messageFactory.create(params);
-        System.out.println(message.getSid());
+            MessageFactory messageFactory =
+                    twilioClient.getAccount().getMessageFactory();
+            Message message = messageFactory.create(params);
+            System.out.println(message.getSid());
+        }
     }
 }
