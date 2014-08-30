@@ -36,3 +36,32 @@ simple TO-DO note REST API.
 
   Delete a TO-DO item.
 
+To Run in Local System
+----------------------
+
++ Install JDK 7+ and Apache Maven.
++ Install a local MongoDB and start with the default port#.
++ Install foreman (part of Heroku toolbelt).
++ Git clone and run it:
+
+    https://github.com/xflin/jersey2-jackson-mongo-todo.git
+
+    cd jersey2-jackson-mongo-todo
+
+    mvn package
+
+    foreman start web
+
++ Open your browser (or cURL) to http://localhost:5000/todo
+
+Heroku Env Variables
+--------------------
+
+    heroku config:set MONGODB_URL="..."
+
+Optionally if you want to try SMS when "done" is marked:
+
+    heroku config:set TWILIO_ACCOUNT_SID="..."
+    heroku config:set TWILIO_AUTH_TOKEN="..."
+    heroku config:set TWILIO_FROM_PHONE_NO="+1##########"
+
