@@ -23,15 +23,27 @@ public class TwilioUtil {
                 new TwilioRestClient(accountSid, authToken) : null;
     }
 
-    public void sendSms(String msg) throws TwilioRestException {
+    /**
+     * Sends SMS message to the specified phone#.
+     *
+     * @param toPhone The target phone#.
+     * @param msg The message body.
+     * @return SID of the message.
+     * @throws TwilioRestException When there a problem sending the message.
+     */
+    public String sms(String toPhone, String msg) throws TwilioRestException {
+        String msgSid = null;
         if (fromPhoneNo != null) {
             List<NameValuePair> params = new ArrayList<>();
+            params.add(new BasicNameValuePair("To", toPhone));
             params.add(new BasicNameValuePair("From", fromPhoneNo));
+            params.add(new BasicNameValuePair("Body", msg));
 
             MessageFactory messageFactory =
                     twilioClient.getAccount().getMessageFactory();
             Message message = messageFactory.create(params);
-            System.out.println(message.getSid());
+            msgSid = message.getSid();
         }
+        return msgSid;
     }
 }

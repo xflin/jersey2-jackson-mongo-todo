@@ -19,7 +19,10 @@ import static org.junit.Assert.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response.Status;
 
-// TODO: add negative tests
+// TODO:
+// + should verify http response type and status
+// + should verify raw response body (instead of deserialized Java object)
+// + add negative tests
 public class ToDoResourceTest extends JerseyTest {
     private MongoTestHelper mongoTestHelper;
 

@@ -1,6 +1,9 @@
 package org.example.todo;
 
 import com.mongodb.ServerAddress;
+import com.twilio.sdk.TwilioRestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import javax.ws.rs.BadRequestException;
@@ -21,16 +24,19 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(APPLICATION_JSON)
 @Singleton
 public class ToDoResource {
+    private static Logger logger = LoggerFactory.getLogger(ToDoResource.class);
+
     // for unit test purpose only
     public static ServerAddress mongoServerAddress;
 
     private ToDoMongoAdapter mongo;
+    private TwilioUtil twilio;
 
     public ToDoResource() {
         if (mongoServerAddress != null) {
             mongo = new ToDoMongoAdapter(mongoServerAddress);
         } else {
-            // local mongodb or Heroku + MongoHQ
+            // Heroku + MongoHQ or local mongodb (when = null)
             String url = System.getenv("MONGODB_URL");
             mongo = new ToDoMongoAdapter(url);
         }
@@ -69,7 +75,7 @@ public class ToDoResource {
     @PUT
     @Path("{id: [a-f0-9]+}")
     @Consumes(APPLICATION_JSON)
-    public ToDoItem updateOrPatchOne(@PathParam("id") String id,
+    public ToDoItem updateOne(@PathParam("id") String id,
             ToDoItem item) {
         if (item == null || item.getTitle() == null) {
             throw new BadRequestException(
@@ -91,14 +97,36 @@ public class ToDoResource {
         }
         if (change.getTitle() != null) item.setTitle(change.getTitle());
         if (change.getBody() != null) item.setBody(change.getBody());
+        if (change.getSmsPhoneNo() != null)
+            item.setSmsPhoneNo(change.getSmsPhoneNo());
 
+        boolean sendMsg = false;
         Boolean done = change.isDone();
         if (done != null && !done.equals(item.isDone())) {
             item.setDone(done);
-            // TODO: send mark done/undone message
+            sendMsg = true;
         }
 
         mongo.updateOne(item);
+
+        // send mark done/undone message
+        if (sendMsg) {
+            String phoneNo = item.getSmsPhoneNo();
+            if (twilio == null) twilio = new TwilioUtil();
+            if (phoneNo != null) {
+                String msg = new StringBuilder(item.getTitle()).
+                        append(" has been marked as ").
+                        append(item.isDone() ? "'done'" : "'undone'").
+                        toString();
+                try { // best effort
+                    twilio.sms(phoneNo, msg);
+                } catch (TwilioRestException e) {
+                    logger.error("Failed to send SMS when mark done=" +
+                        item.isDone() + " todo#" + item.get_id(), e);
+                }
+            }
+        }
+
         return item;
     }
 }
