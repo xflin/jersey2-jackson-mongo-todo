@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import javax.swing.text.html.parser.Entity;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -16,6 +17,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.PUT;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.net.URI;
 import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -47,16 +52,19 @@ public class ToDoResource {
         return mongo.findAll();
     }
 
-    // TODO: Distinguish Created(201) and OK(200).
     @POST
     @Consumes(APPLICATION_JSON)
-    public ToDoItem saveOne(ToDoItem todo) {
+    public Response saveOne(@Context UriInfo uriInfo, ToDoItem todo) {
         if (todo == null || todo.getTitle() == null) {
             throw new BadRequestException(
                     "Invalid to-do item: title is required.");
         }
         mongo.saveOne(todo);
-        return mongo.findByTitle(todo.getTitle()).get(0);
+        ToDoItem created = mongo.findByTitle(todo.getTitle()).get(0);
+        URI createdUri = uriInfo.getRequestUriBuilder().path(created.get_id()).
+                build();
+        logger.info("Created item URI: " + createdUri);
+        return Response.created(createdUri).entity(created).build();
     }
 
     @GET
