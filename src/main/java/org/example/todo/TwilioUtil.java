@@ -33,7 +33,7 @@ public class TwilioUtil {
      */
     public String sms(String toPhone, String msg) throws TwilioRestException {
         String msgSid = null;
-        if (fromPhoneNo != null) {
+        if (twilioClient != null && fromPhoneNo != null) {
             List<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("To", toPhone));
             params.add(new BasicNameValuePair("From", fromPhoneNo));
