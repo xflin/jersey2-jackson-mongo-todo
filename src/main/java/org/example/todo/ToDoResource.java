@@ -113,7 +113,8 @@ public class ToDoResource {
         return item;
     }
 
-    // TODO: Extend jersey to support @PATCH annotation.
+    // TODO: Extend jersey to support @PATCH annotation, as explained here:
+    // http://kingsfleet.blogspot.be/2014/02/transparent-patch-support-in-jax-rs-20.html
     @PUT
     @Path("{id: [a-f0-9]+}/patch")
     @Consumes(APPLICATION_JSON)
@@ -167,6 +168,11 @@ public class ToDoResource {
         }
     }
 
+    // TODO: Search integration is very rough. Potential enhancements:
+    //   + Give "title" more weight than "body".
+    //   + Implement update/delete on search indices.
+    //   + Better search error handling with retries, etc.
+    //
     // best effort indexing
     private void searchIndex(ToDoItem todo) {
         checkSearchService();
