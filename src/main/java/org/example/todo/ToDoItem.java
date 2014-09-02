@@ -1,9 +1,10 @@
 package org.example.todo;
 
+import io.searchbox.annotations.JestId;
 import org.jongo.marshall.jackson.oid.ObjectId;
 
 public class ToDoItem {
-    @ObjectId private String _id;
+    @ObjectId @JestId private String _id;
     private String title, body;
     private Boolean done;
     private String smsPhoneNo;

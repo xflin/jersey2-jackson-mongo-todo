@@ -7,6 +7,10 @@ simple TO-DO note REST API.
 + GET /todo
 
     List To-Do items.
+    
++ GET /todo?q=[query-text]
+
+    Search "title" and "body" contents for matching TO-DO items.
 
 + POST /todo
 
@@ -41,7 +45,7 @@ simple TO-DO note REST API.
 + DELETE /todo/[id]
 
     Delete a TO-DO item.
-
+    
 To Run in Local System
 ----------------------
 
@@ -64,6 +68,7 @@ Heroku Env Variables
 --------------------
 
     heroku config:set MONGODB_URL="..."
+    heroku config:set SEARCH_URL="https://site:{api-key}@{site}.searchly.com"
 
 Optionally if you want to try SMS when "done" is marked:
 

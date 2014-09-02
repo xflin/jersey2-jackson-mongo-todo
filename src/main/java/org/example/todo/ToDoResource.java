@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import javax.swing.text.html.parser.Entity;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -17,9 +16,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.PUT;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class ToDoResource {
 
     private ToDoMongoAdapter mongo;
     private TwilioUtil twilio;
+    private SearchService searchService;
 
     public ToDoResource() {
         if (mongoServerAddress != null) {
@@ -44,12 +46,19 @@ public class ToDoResource {
             // Heroku + MongoHQ or local mongodb (when = null)
             String url = System.getenv("MONGODB_URL");
             mongo = new ToDoMongoAdapter(url);
+
+            try {
+                searchService = new SearchService();
+            } catch (IOException ioe) {
+                logger.error("Failed to initialize search client.", ioe);
+            }
         }
     }
 
     @GET
-    public List<ToDoItem> getToDoList() {
-        return mongo.findAll();
+    public List<ToDoItem> getToDoList(@QueryParam("q") String query) {
+        return query == null || query.trim().equals("") ? mongo.findAll() :
+                search(query);
     }
 
     @POST
@@ -64,6 +73,9 @@ public class ToDoResource {
         URI createdUri = uriInfo.getRequestUriBuilder().path(created.get_id()).
                 build();
         logger.info("Created item URI: " + createdUri);
+
+        searchIndex(todo);
+
         return Response.created(createdUri).entity(created).build();
     }
 
@@ -143,5 +155,40 @@ public class ToDoResource {
         }
 
         return item;
+    }
+
+    private void checkSearchService() {
+        if (searchService == null) {
+            try {
+                searchService = new SearchService();
+            } catch (IOException ioe) {
+                logger.trace("Failed to init search.", ioe);
+            }
+        }
+    }
+
+    // best effort indexing
+    private void searchIndex(ToDoItem todo) {
+        checkSearchService();
+        if (searchService != null && todo != null) {
+            try {
+                searchService.index(todo);
+            } catch (IOException ioe) {
+                logger.error("Failed to index: + " + todo, ioe);
+            }
+        }
+    }
+
+    private List<ToDoItem> search(String query) {
+        checkSearchService();
+        if (searchService == null) {
+            throw new IllegalStateException("Search service is not ready.");
+        } else {
+            try {
+                return searchService.search(query);
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
+        }
     }
 }
